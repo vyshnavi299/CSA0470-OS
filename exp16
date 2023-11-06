@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Employee {
+    int empId;
+    char empName[50];
+    float empSalary;
+};
+
+void writeEmployeeRecord(FILE *file, struct Employee emp) {
+    fseek(file, (emp.empId - 1) * sizeof(struct Employee), SEEK_SET);
+    fwrite(&emp, sizeof(struct Employee), 1, file);
+}
+
+void readEmployeeRecord(FILE *file, int empId, struct Employee *emp) {
+    fseek(file, (empId - 1) * sizeof(struct Employee), SEEK_SET);
+    fread(emp, sizeof(struct Employee), 1, file);
+}
+
+int main() {
+    FILE *file;
+    file = fopen("employee.dat", "rb+");
+
+    if (file == NULL) {
+        file = fopen("employee.dat", "wb+");
+        if (file == NULL) {
+            perror("Unable to open or create the file");
+            exit(1);
+        }
+    }
+
+    int choice;
+    struct Employee emp;
+
+    while (1) {
+        printf("\n1. Add employee\n2. Update employee\n3. Delete employee\n4. Display employee\n5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter employee ID: ");
+                scanf("%d", &emp.empId);
+                printf("Enter employee name: ");
+                scanf("%s", emp.empName);
+                printf("Enter employee salary: ");
+                scanf("%f", &emp.empSalary);
+                writeEmployeeRecord(file, emp);
+                break;
+
+            case 2:
+                printf("Enter employee ID to update: ");
+                int empIdToUpdate;
+                scanf("%d", &empIdToUpdate);
+                readEmployeeRecord(file, empIdToUpdate, &emp);
+                if (emp.empId != 0) {
+                    printf("Enter new name: ");
+                    scanf("%s", emp.empName);
+                    printf("Enter new salary: ");
+                    scanf("%f", &emp.empSalary);
+                    writeEmployeeRecord(file, emp);
+                    printf("Employee updated successfully.\n");
+                } else {
+                    printf("Employee not found.\n");
+                }
+                break;
+
+            case 3:
+                printf("Enter employee ID to delete: ");
+                int empIdToDelete;
+                scanf("%d", &empIdToDelete);
+                readEmployeeRecord(file, empIdToDelete, &emp);
+                if (emp.empId != 0) {
+                    emp.empId = 0; // Mark as deleted
+                    writeEmployeeRecord(file, emp);
+                    printf("Employee deleted successfully.\n");
+                } else {
+                    printf("Employee not found.\n");
+                }
+                break;
+
+            case 4:
+                printf("Enter employee ID to display: ");
+                int empIdToDisplay;
+                scanf("%d", &empIdToDisplay);
+                readEmployeeRecord(file, empIdToDisplay, &emp);
+                if (emp.empId != 0) {
+                    printf("Employee ID: %d\n", emp.empId);
+                    printf("Employee Name: %s\n", emp.empName);
+                    printf("Employee Salary: %.2f\n", emp.empSalary);
+                } else {
+                    printf("Employee not found.\n");
+                }
+                break;
+
+            case 5:
+                fclose(file);
+                exit(0);
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
