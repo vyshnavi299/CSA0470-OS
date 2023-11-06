@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+// Define a shared resource and a mutex to protect it
+int sharedResource = 0;
+pthread_mutex_t mutex;
+
+// Function to simulate a process that increments the shared resource
+void* incrementResource(void* arg) {
+    for (int i = 0; i < 10000; i++) {
+        pthread_mutex_lock(&mutex); // Acquire the lock
+        sharedResource++;
+        pthread_mutex_unlock(&mutex); // Release the lock
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+
+    // Initialize the mutex
+    if (pthread_mutex_init(&mutex, NULL) != 0) {
+        perror("Mutex initialization failed");
+        exit(1);
+    }
+
+    // Create two threads that increment the shared resource
+    if (pthread_create(&thread1, NULL, incrementResource, NULL) != 0 ||
+        pthread_create(&thread2, NULL, incrementResource, NULL) != 0) {
+        perror("Thread creation failed");
+        exit(1);
+    }
+
+    // Wait for both threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    // Destroy the mutex
+    pthread_mutex_destroy(&mutex);
+
+    // Print the final value of the shared resource
+    printf("Shared resource value: %d\n", sharedResource);
+
+    return 0;
+}
