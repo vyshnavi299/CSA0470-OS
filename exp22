@@ -1,0 +1,87 @@
+#include <stdio.h>
+
+#define MEMORY_SIZE 100
+
+int memory[MEMORY_SIZE];
+
+// Function to initialize memory
+void initializeMemory() {
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        memory[i] = -1; // -1 indicates that the memory block is empty
+    }
+}
+
+// Function to display the memory contents
+void displayMemory() {
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        if (memory[i] == -1) {
+            printf("_ "); // Empty block
+        } else {
+            printf("%d ", memory[i]); // Occupied block
+        }
+    }
+    printf("\n");
+}
+
+// Function to allocate memory using Best Fit
+void bestFit(int processSize, int processId) {
+    int bestFitSize = MEMORY_SIZE + 1; // Initialize with a large value
+    int bestFitIndex = -1;
+
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        int blockSize = 0;
+
+        if (memory[i] == -1) {
+            int j = i;
+            while (j < MEMORY_SIZE && memory[j] == -1) {
+                blockSize++;
+                j++;
+            }
+
+            if (blockSize >= processSize && blockSize < bestFitSize) {
+                bestFitSize = blockSize;
+                bestFitIndex = i;
+            }
+
+            i = j - 1;
+        }
+    }
+
+    if (bestFitIndex != -1) {
+        for (int i = bestFitIndex; i < bestFitIndex + processSize; i++) {
+            memory[i] = processId;
+        }
+        printf("Process %d allocated using Best Fit\n", processId);
+    } else {
+        printf("Process %d cannot be allocated using Best Fit\n", processId);
+    }
+}
+
+// Function to deallocate memory
+void deallocate(int processId) {
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        if (memory[i] == processId) {
+            memory[i] = -1;
+        }
+    }
+}
+
+int main() {
+    initializeMemory();
+
+    displayMemory();
+
+    bestFit(20, 1); // Allocate process 1 with size 20
+    displayMemory();
+
+    bestFit(10, 2); // Allocate process 2 with size 10
+    displayMemory();
+
+    bestFit(30, 3); // Allocate process 3 with size 30
+    displayMemory();
+
+    deallocate(1); // Deallocate process 1
+    displayMemory();
+
+    return 0;
+}
