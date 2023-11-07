@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int main() {
+    int file_descriptor;
+    char data[] = "This is a sample text that will be written to the file.\n";
+    char buffer[100];
+
+    // Create or open a file for writing (If it exists, it will be truncated)
+    file_descriptor = open("sample_file.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
+    if (file_descriptor == -1) {
+        perror("open");
+        exit(1);
+    }
+
+    // Write data to the file
+    if (write(file_descriptor, data, sizeof(data)) == -1) {
+        perror("write");
+        close(file_descriptor);
+        exit(1);
+    }
+
+    // Close the file
+    if (close(file_descriptor) == -1) {
+        perror("close");
+        exit(1);
+    }
+
+    // Open the file for reading
+    file_descriptor = open("sample_file.txt", O_RDONLY);
+
+    if (file_descriptor == -1) {
+        perror("open");
+        exit(1);
+    }
+
+    // Read and display the contents of the file
+    int num_bytes = read(file_descriptor, buffer, sizeof(buffer));
+
+    if (num_bytes == -1) {
+        perror("read");
+        close(file_descriptor);
+        exit(1);
+    }
+
+    buffer[num_bytes] = '\0';
+    printf("Read from file: %s", buffer);
+
+    // Close the file again
+    if (close(file_descriptor) == -1) {
+        perror("close");
+        exit(1);
+    }
+
+    return 0;
+}
